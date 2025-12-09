@@ -74,14 +74,3 @@ Edit
 
 ---
 
-## 🧾 Author
-
-**Ali Abdelmeneam**  
-Student ID: 21510563  
-Graduation Year: 2025
-
----
-
-## 📜 License
-
-This project is for educational and demonstration purposes only.
