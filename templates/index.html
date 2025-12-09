@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="text-center mt-5 animate__animated animate__fadeIn">
+  <h1 class="fw-bold text-info">🏥 Hospital Crowding Predictor</h1>
+  <p class="lead mt-3">Forecast crowding in hospital sections using data-driven insights.<br>
+     Make better staffing and capacity decisions before emergencies arise.</p>
+  <a href="{{ url_for('form') }}" class="btn btn-custom btn-lg mt-4 shadow">🚀 Start Prediction</a>
+
+  <div class="mt-5 row justify-content-center">
+    <div class="col-md-4">
+      <div class="card bg-dark text-light border-info shadow">
+        <div class="card-body">
+          <h5 class="card-title text-info">📈 Smart Predictions</h5>
+          <p>Get accurate forecasts based on patient load and resource data.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mt-3 mt-md-0">
+      <div class="card bg-dark text-light border-success shadow">
+        <div class="card-body">
+          <h5 class="card-title text-success">🧠 Machine Learning</h5>
+          <p>Powered by Random Forest classifier trained on healthcare data.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mt-3 mt-md-0">
+      <div class="card bg-dark text-light border-warning shadow">
+        <div class="card-body">
+          <h5 class="card-title text-warning">📊 Visual Insights</h5>
+          <p>Instantly view charts comparing bed capacity and patient demand.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

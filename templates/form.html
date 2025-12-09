@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-box">
+  <h2 class="text-center text-info mb-4">🧾 Enter Hospital Data</h2>
+  <form method="POST">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <label>Section</label>
+        <select name="section" class="form-select">
+          <option>ICU</option>
+          <option>Emergency</option>
+          <option>General Ward</option>
+        </select>
+        <label>Forecast Period</label>
+        <select name="forecast" class="form-select">
+          <option>3 months</option>
+          <option>6 months</option>
+        </select>
+        <label>Total Hospital Beds</label>
+        <input name="total_hospital_beds" type="number" class="form-control" required>
+        <label>Available Hospital Beds</label>
+        <input name="available_hospital_beds" type="number" class="form-control" required>
+        <label>Potentially Available Hospital Beds</label>
+        <input name="potentially_available_hospital_beds" type="number" class="form-control" required>
+        <label>Projected Infected Individuals</label>
+        <input name="projected_infected_individuals" type="number" class="form-control" required>
+      </div>
+
+      <div class="col-md-6">
+        <label>Total Section Beds</label>
+        <input name="total_unit_beds" type="number" class="form-control" required>
+        <label>Available Section Beds</label>
+        <input name="available_unit_beds" type="number" class="form-control" required>
+        <label>Adult Population</label>
+        <input name="adult_population" type="number" class="form-control" required>
+        <label>Population 65+</label>
+        <input name="population_65_plus" type="number" class="form-control" required>
+        <label>Staff Count</label>
+        <input name="staff_count" type="number" class="form-control" required>
+        <label>Patients (Last 2 Months)</label>
+        <input name="patients_last_2_months" type="number" class="form-control" required>
+      </div>
+    </div>
+
+    <!-- Hidden fields to capture location -->
+    <input type="hidden" id="lat" name="lat">
+    <input type="hidden" id="lng" name="lng">
+
+    <script>
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        document.getElementById("lat").value = pos.coords.latitude;
+        document.getElementById("lng").value = pos.coords.longitude;
+      }, function(err) {
+        console.warn("Geolocation error:", err);
+      }, {timeout:10000});
+    }
+    </script>
+
+    <div class="text-center mt-4">
+      <button class="btn btn-custom btn-lg shadow">🔍 Predict Crowding</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-box py-4">
+  <h2 class="text-center text-info mb-4">📊 Prediction Results Dashboard</h2>
+
+  <!-- Result Highlight -->
+  <div class="alert text-center {% if data.result_label == 'CROWDED' %}alert-danger{% else %}alert-success{% endif %}">
+    <h4>
+      {% if data.result_label == 'CROWDED' %}
+      🚨 This hospital section is likely to be <b>CROWDED</b>!
+      {% else %}
+      ✅ This hospital section is <b>NOT likely to be crowded</b>.
+      {% endif %}
+    </h4>
+    <p><b>Crowding Ratio:</b> {{ data.crowding_ratio }}</p>
+  </div>
+
+  <!-- Staff Ratio Alert -->
+  <div class="alert alert-{{ data.ratio_color }} mt-3 shadow-sm">
+    <strong>Staff-to-Patient Ratio:</strong> {{ data.ratio_alert }}
+  </div>
+
+  <!-- Chart Selection -->
+  <div class="text-center mt-5">
+    <h4 class="text-light mb-3">📊 Select Visualization Type</h4>
+    <select id="chartSelect" class="form-select bg-dark text-light w-50 mx-auto border-info shadow">
+      <option value="bed">🏥 Bed Demand vs Availability</option>
+      <option value="trend">📈 Patient Load Trend</option>
+      <option value="staff">👩‍⚕️ Staff-to-Patient Ratio</option>
+      <option value="crowding">📉 Crowding Over Time</option>
+      <option value="resources">🧾 Resource Distribution</option>
+    </select>
+  </div>
+
+  <!-- Chart Container -->
+  <div class="text-center mt-4">
+    <canvas id="dynamicChart" style="max-width:800px; margin:auto; background-color:#1e1e1e; border-radius:10px; padding:10px;"></canvas>
+  </div>
+
+  <!-- Prediction Summary Table -->
+  <h5 class="mt-5 text-info text-center">📋 Prediction Summary</h5>
+  <div class="table-responsive mt-3">
+    <table class="table table-dark table-hover align-middle rounded shadow">
+      <tbody>
+        <tr><th>Hospital Section</th><td>{{ data.section }}</td></tr>
+        <tr><th>Forecast Period</th><td>{{ data.forecast }}</td></tr>
+        <tr><th>Total Hospital Beds</th><td>{{ data.total_hospital_beds }}</td></tr>
+        <tr><th>Available Beds</th><td>{{ data.available_hospital_beds }}</td></tr>
+        <tr><th>Potentially Available Beds</th><td>{{ data.potentially_available_hospital_beds }}</td></tr>
+        <tr><th>Projected Infected Individuals</th><td>{{ data.projected_infected_individuals }}</td></tr>
+        <tr><th>Staff Count</th><td>{{ data.staff_count }}</td></tr>
+        <tr><th>Patients (Last 2 Months)</th><td>{{ data.patients_last_2_months }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Buttons -->
+  <div class="text-center mt-5">
+    <form action="{{ url_for('download_report') }}" method="POST">
+      {% for key, value in data.items() %}
+        <input type="hidden" name="{{ key }}" value="{{ value }}">
+      {% endfor %}
+      <button class="btn btn-info btn-lg shadow-lg px-5">📄 Download PDF Report</button>
+    </form>
+    <a href="{{ url_for('form') }}" class="btn btn-outline-light btn-lg mt-3 shadow">🔁 Predict Again</a>
+  </div>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartCtx = document.getElementById('dynamicChart');
+let chart;
+
+const chartData = {
+  bed: {
+    type: 'bar',
+    data: {
+      labels: ['Available Beds', 'Projected Demand'],
+      datasets: [{
+        data: [{{ data.available_total }}, {{ data.projected_infected_individuals }}],
+        backgroundColor: ['#4CAF50', '#E53935']
+      }]
+    }
+  },
+  trend: {
+    type: 'line',
+    data: {
+      labels: {{ data.weeks | safe }},
+      datasets: [{
+        label: 'Patients per Week',
+        data: {{ data.patients_per_week | safe }},
+        borderColor: '#00d1ff',
+        fill: false,
+        tension: 0.4,
+        pointBackgroundColor: '#fff'
+      }]
+    }
+  },
+  staff: {
+    type: 'pie',
+    data: {
+      labels: ['Staff', 'Patients'],
+      datasets: [{
+        data: [{{ data.staff_count }}, {{ data.patients_last_2_months }}],
+        backgroundColor: ['#03DAC6', '#FF5722']
+      }]
+    }
+  },
+  crowding: {
+    type: 'line',
+    data: {
+      labels: ['Week 1','Week 2','Week 3','Week 4','Week 5','Week 6','Week 7','Week 8'],
+      datasets: [{
+        label: 'Crowding Ratio',
+        data: Array.from({length: 8}, () => (Math.random() * (1.2 - 0.5) + 0.5).toFixed(2)),
+        borderColor: '#BB86FC',
+        fill: false,
+        tension: 0.3
+      }]
+    }
+  },
+  resources: {
+    type: 'doughnut',
+    data: {
+      labels: ['Available Beds', 'Potential Beds', 'Total Beds'],
+      datasets: [{
+        data: [{{ data.available_hospital_beds }}, {{ data.potentially_available_hospital_beds }}, {{ data.total_hospital_beds }}],
+        backgroundColor: ['#00E676', '#FFEA00', '#2979FF']
+      }]
+    }
+  }
+};
+
+// Render selected chart dynamically
+function renderChart(type) {
+  if (chart) chart.destroy();
+  const config = chartData[type];
+  config.options = {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#fff' } } },
+    scales: {
+      y: { ticks: { color: '#fff' }, grid: { color: '#444' } },
+      x: { ticks: { color: '#fff' }, grid: { color: '#444' } }
+    }
+  };
+  chart = new Chart(chartCtx, config);
+}
+
+// Initialize with first chart
+renderChart('bed');
+
+// Handle dropdown change
+document.getElementById('chartSelect').addEventListener('change', e => renderChart(e.target.value));
+</script>
+
+<style>
+.container-box {
+  background: #121212;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+.table th, .table td {
+  color: #ddd !important;
+}
+.btn-custom, .btn-info {
+  background: linear-gradient(45deg, #00c6ff, #0072ff);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn-custom:hover, .btn-info:hover {
+  background: linear-gradient(45deg, #0072ff, #00c6ff);
+  transform: scale(1.05);
+}
+select.form-select {
+  max-width: 400px;
+  text-align: center;
+}
+canvas {
+  background-color: #1e1e1e;
+}
+</style>
+{% endblock %}
